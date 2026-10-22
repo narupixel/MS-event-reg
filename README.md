@@ -21,6 +21,77 @@ The frontend MVP supports the complete event-registration demonstration:
 The feature modules validate event lifecycle, capacity, attendee data, and
 removal safety before updating their stores.
 
+## Milestone 2 implementation summary
+
+Milestone 2 adds a beginner-friendly backend-supported feature: persistent
+attendee registration. The existing attendee registration form now sends data
+to an Express.js REST API instead of saving new registrations only in the
+browser.
+
+### Backend-supported functionality
+
+- Express.js serves the frontend and provides the backend API on port `8000`.
+- `POST /api/registrations` receives attendee name, email, event ID, and event
+  context.
+- The backend validates attendee input, event status, event schedule, and
+  available capacity.
+- Confirmed registrations are stored in
+  `backend/data/registrations.json`, so they remain available after a server
+  restart.
+- `GET /api/registrations` retrieves stored registration records for the
+  manager workspace.
+- `PATCH /api/registrations/:id/cancel` cancels a registration and releases
+  its place.
+- `DELETE /api/registrations/:id` removes a canceled registration.
+- `GET /api/health` provides a simple backend availability check.
+- Backend errors return clear HTTP responses that the frontend displays to the
+  user.
+- A serialized write queue protects capacity checks from overlapping writes
+  during simultaneous registration requests.
+
+### Milestone 2 information flow
+
+1. An attendee completes the existing registration form.
+2. The frontend reviews the attendee details before submission.
+3. The frontend sends the registration to `POST /api/registrations`.
+4. The backend validates the request and checks event availability.
+5. The backend stores the confirmed registration and returns its ID and
+   timestamp.
+6. The confirmation screen displays the returned registration details.
+7. The manager registration view retrieves records from the backend API.
+
+### Milestone 2 testing coverage
+
+The backend test suite covers valid registration, email normalization, invalid
+name and email input, full-event rejection, and retrieval of persisted records.
+The frontend also handles unavailable backend services and API validation
+errors with user-facing messages.
+
+### Milestone 2 scope and future work
+
+This first backend feature intentionally uses a JSON file rather than a
+database so the data flow remains easy to understand and demonstrate. Future
+backend work may replace the file with SQLite or another database, add
+server-side manager authentication and authorization, move event records to
+the backend, and add multi-user event synchronization.
+
+## Milestone 1 fixes carried into Milestone 2
+
+- **Session-expiration routing:** protected and invalid direct URLs now clear
+  stale authentication state before redirecting to the login screen. This
+  prevents stale session values from causing redirect or reload loops.
+- **Direct-login rendering:** signing in while already visiting a protected
+  hash route now correctly renders the manager dashboard.
+- **Dashboard status visibility:** manager event cards show high-contrast
+  `FULL` and `CLOSED` badges without requiring the manager to open event
+  details.
+- **Capacity-aware status:** `FULL` is shown when no active places remain,
+  while `CLOSED` continues to represent the event lifecycle status.
+- **Sample workflow date:** the published sample event uses a future date so
+  the invite-only attendee route remains demonstrable.
+- **Persistence documentation:** the project now distinguishes browser-local
+  event data from backend-persisted registration data.
+
 ## Demo login
 
 - Username: `agent`
