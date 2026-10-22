@@ -200,18 +200,6 @@ The tests cover event and registration rules, CRUD behavior, availability,
 removal protection, and route mapping. Node.js is required for this command;
 it is not required to run the browser frontend.
 
-## Assignment coverage
-
-The implementation includes semantic HTML for navigation, forms, lists, and
-status messages; responsive CSS split into foundation and feature files; and
-JavaScript interactions for validation, conditional event states, and both
-manager and attendee workflows.
-
-Before submission, manually review keyboard navigation, the accessibility tree,
-browser console, 200% zoom, and narrow, tablet, and desktop layouts. Complete
-the team's workflow worksheet, AI use statements, final review, and repository
-link checks as required by the assignment.
-
 ## Project structure
 
 ```text
