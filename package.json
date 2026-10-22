@@ -1,0 +1,12 @@
+{
+  "name": "event-registry-ms2",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node backend/server.js",
+    "test": "node --test frontend/tests/*.test.js backend/tests/*.test.js"
+  },
+  "dependencies": {
+    "express": "^5.1.0"
+  }
+}

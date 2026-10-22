@@ -104,7 +104,7 @@ export function createEventSeed() {
       id: "community-design-meetup",
       title: "Community Design Meetup",
       description: "A practical afternoon for sharing interface work and feedback.",
-      startsAt: "2026-10-18T14:00:00+08:00",
+      startsAt: "2026-12-18T14:00:00+08:00",
       timeZone: "Asia/Manila",
       venue: "The Workshop, Makati",
       capacity: 80,

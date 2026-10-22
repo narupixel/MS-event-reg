@@ -127,7 +127,7 @@ export function initializeShell() {
       createElement(
         "p",
         "environment-note",
-        "Sample data - resets on refresh",
+        "Sample data - stored in this browser",
       ),
     );
   }

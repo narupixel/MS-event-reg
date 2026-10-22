@@ -1,6 +1,7 @@
 export { initializeConfirmation } from "./confirmation.js";
 export { initializeRegistrationForm } from "./form.js";
 export { initializeRegistrations } from "./list.js";
+export { createRegistrationApi } from "./api.js";
 export {
   createRegistration,
   isEmailAddress,

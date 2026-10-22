@@ -71,7 +71,14 @@ function createEventItem(event, onView, onEdit) {
   scheduleLine.append(eventTime, venue);
   body.append(title, scheduleLine);
   actions.append(view, edit);
-  summary.append(createEventStatus(event.status), capacity, availability, actions);
+  summary.append(
+    createEventStatus(event.status, {
+      full: event.status !== "closed" && event.remainingCapacity === 0,
+    }),
+    capacity,
+    availability,
+    actions,
+  );
   item.append(createDateBlock(event), body, summary);
 
   return item;

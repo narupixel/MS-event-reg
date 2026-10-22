@@ -119,6 +119,17 @@
   background: currentColor;
 }
 
+.event-status-full,
+.event-status-closed {
+  padding: 0.2rem 0.45rem;
+  border-radius: var(--radius-small);
+  background: var(--color-ink);
+  color: var(--color-inverse);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
 .event-capacity,
 .event-availability {
   margin: 0;

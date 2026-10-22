@@ -16,7 +16,7 @@ import {
 import {
   cancelRegistrationRecord,
   createRegistrationRecord,
-  createRegistrationStorage,
+  createRegistrationApi,
   initializeConfirmation,
   initializeRegistrationForm,
   initializeRegistrations,
@@ -39,6 +39,7 @@ initializeShell();
 initializeLogin({
   onLogin: () => {
     window.location.hash = "events";
+    window.dispatchEvent(new HashChangeEvent("hashchange"));
   },
 });
 
@@ -51,16 +52,12 @@ const modal = initializeModal();
 const toasts = initializeToasts();
 
 const EVENTS_STORAGE_KEY = "event-registry-events";
-const REGISTRATIONS_STORAGE_KEY = "event-registry-registrations";
 const eventRepository = createEventStorage(
   window.localStorage,
   EVENTS_STORAGE_KEY,
   createEventSeed(),
 );
-const registrationRepository = createRegistrationStorage(
-  window.localStorage,
-  REGISTRATIONS_STORAGE_KEY,
-);
+const registrationRepository = createRegistrationApi();
 
 let eventsView;
 let detailView;
@@ -225,7 +222,7 @@ registrationsView = initializeRegistrations({
 });
 
 window.addEventListener("storage", ({ key }) => {
-  if (![EVENTS_STORAGE_KEY, REGISTRATIONS_STORAGE_KEY].includes(key)) {
+  if (key !== EVENTS_STORAGE_KEY) {
     return;
   }
 
@@ -241,4 +238,7 @@ document.querySelector("[data-new-event]")?.addEventListener("click", () => {
   window.location.hash = "editor";
 });
 
-initializeRouter({ isAuthenticated });
+initializeRouter({
+  isAuthenticated,
+  onAuthenticationRequired: clearAuthentication,
+});

@@ -51,6 +51,60 @@ test("route resolution handles unknown and uninitialized views", () => {
   assert.equal(resolveRoute("register", true, false), "register");
 });
 
+test("router clears stale authentication before redirecting protected routes", async () => {
+  const originalWindow = globalThis.window;
+  const originalDocument = globalThis.document;
+  let cleared = 0;
+  let renderedLogin = false;
+
+  globalThis.window = {
+    location: { hash: "#events" },
+    addEventListener: (event, handler) => {
+      if (event === "hashchange") {
+        globalThis.window.renderCurrentRoute = handler;
+      }
+    },
+  };
+  globalThis.document = {
+    querySelector: (selector) => {
+      if (selector === '[data-view="events"]') {
+        return { dataset: { ready: "true" } };
+      }
+
+      if (selector === '[data-view="login"] h1') {
+        return { textContent: "Welcome back" };
+      }
+
+      return null;
+    },
+    querySelectorAll: (selector) => {
+      if (selector === "[data-view]") {
+        return [{ dataset: { view: "login" }, hidden: false }];
+      }
+
+      return [];
+    },
+    title: "",
+  };
+
+  try {
+    const { initializeRouter } = await import("../src/shared/router.js");
+    initializeRouter({
+      isAuthenticated: () => false,
+      onAuthenticationRequired: () => {
+        cleared += 1;
+      },
+    });
+    renderedLogin = true;
+  } finally {
+    globalThis.window = originalWindow;
+    globalThis.document = originalDocument;
+  }
+
+  assert.equal(cleared, 1);
+  assert.equal(renderedLogin, true);
+});
+
 test("the document provides separate manager and public shell hooks", () => {
   assert.match(markup, /data-app-shell data-mode="manager"/);
   assert.match(markup, /data-public-header hidden/);

@@ -40,7 +40,7 @@ export async function createRegistrationRecord({
     throw new RegistrationConflictError("This event has reached capacity.");
   }
 
-  return registrationRepository.create(registration);
+  return registrationRepository.create(registration, event);
 }
 
 export async function readRegistrations({

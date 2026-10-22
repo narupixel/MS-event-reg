@@ -3,6 +3,8 @@
 A focused browser application with a manager workspace for creating events and
 managing registrations, plus a separate public-facing attendee experience.
 
+[Open the live demo](https://narupixel.github.io/MS1-event-reg/)
+
 ## Implementation status
 
 The frontend MVP supports the complete event-registration demonstration:
@@ -32,26 +34,28 @@ managing additional manager accounts but should do so in future expansions.
 
 ## Run locally
 
-The app uses native JavaScript modules, so open it through a local HTTP server
-rather than directly from the file system. No packages or database are needed
-to run the frontend.
+The Milestone 2 version uses an Express backend for persistent attendee
+registrations. Node.js and npm are required.
 
 From the repository root:
 
 ```bash
-cd frontend
-python -m http.server 8000
+npm install
+npm start
 ```
 
-Then open <http://localhost:8000/#events> for the manager workspace or
-<http://localhost:8000/#register> for the attendee page.
+Then open <http://localhost:8000/#events> for the manager workspace. The
+backend serves the frontend and exposes the registration API under
+`/api/registrations`.
 
-Alternatively, use any static file server with `frontend/` as its document
-root.
+Registration records are stored in `backend/data/registrations.json` and remain
+available after the server restarts. This JSON file is intentionally used as a
+beginner-friendly persistence layer for the first backend feature; it can be
+replaced by SQLite or another database in a later milestone.
 
 ## Demo workflow
 
-Keep the demonstration in one browser tab so the connected sample data remains
+Keep the demonstration in one browser so the connected sample data remains
 available:
 
 1. Sign in and create a future event.
@@ -60,8 +64,10 @@ available:
 4. Select **Manager workspace** in the public header.
 5. Open **Registrations** to show the new record and updated availability.
 
-Refreshing the page resets the sample data. The app does not send email,
-process payments, or persist attendee information to a server.
+Event data remains local to the browser for the current milestone. Attendee
+registrations are now sent to the Express backend and persist in
+`backend/data/registrations.json`. The app does not send email or process
+payments.
 
 ## Main routes
 
@@ -96,12 +102,42 @@ render.
 Run the Node test suite from the repository root:
 
 ```bash
-node --test frontend/tests/*.test.js
+npm test
 ```
 
-The tests cover event and registration rules, CRUD behavior, availability,
-removal protection, and route mapping. Node.js is required for this command;
-it is not required to run the browser frontend.
+The tests cover event and registration rules, availability, removal
+protection, route mapping, API validation, persistence, and capacity
+protection.
+
+## Milestone 2 backend feature
+
+The first backend-supported feature is persistent attendee registration:
+
+1. The attendee completes the existing registration form.
+2. The frontend sends the event ID, attendee name, email, and event context to
+   `POST /api/registrations`.
+3. The backend validates the input, event status, schedule, and capacity.
+4. The backend stores the confirmed registration and returns its ID and
+   timestamp.
+5. The manager registration view retrieves records from
+   `GET /api/registrations`.
+
+The API also supports canceling and removing canceled records. A serialized
+write queue prevents simultaneous requests from exceeding event capacity.
+
+### Milestone 2 testing scenarios
+
+The backend test suite covers:
+
+- valid attendee registration and normalized email storage
+- invalid name and email input
+- full-event rejection
+- retrieval of stored records after the API writes them
+- cancellation and deletion rules through the API
+
+The frontend displays a service-unavailable message when the backend cannot be
+reached, and displays the API's validation message when a registration is
+rejected.
 
 ## Assignment coverage
 
@@ -151,7 +187,8 @@ frontend/
 - Adaptive monochrome visual system with clear states and comfortable targets.
 - Semantic structure, visible keyboard focus, and reduced-motion support.
 - Compact manager navigation that becomes horizontal on smaller screens.
-- No database or API is required; data remains local to the current demo session.
+- No database or API is required for Milestone 1; data remains local to the
+	current browser and is not shared with a backend.
 
 ## Repository
 
