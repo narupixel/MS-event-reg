@@ -9,9 +9,11 @@ async function request(path, options = {}) {
       ...options,
     });
   } catch {
-    throw new Error(
+    const error = new Error(
       "The registration service is unavailable. Start the backend and try again.",
     );
+    error.code = "API_UNAVAILABLE";
+    throw error;
   }
 
   const body = await response.json().catch(() => ({}));
@@ -25,45 +27,75 @@ async function request(path, options = {}) {
   return body;
 }
 
-export function createRegistrationApi() {
+export function createRegistrationApi({ fallback } = {}) {
+  async function withFallback(operation, fallbackOperation) {
+    try {
+      return await operation();
+    } catch (error) {
+      if (error?.code !== "API_UNAVAILABLE" || !fallback) {
+        throw error;
+      }
+
+      return fallbackOperation();
+    }
+  }
+
   return Object.freeze({
     async create(registration, event) {
-      return request("/registrations", {
-        method: "POST",
-        body: JSON.stringify({ ...registration, event }),
-      });
+      return withFallback(() =>
+        request("/registrations", {
+          method: "POST",
+          body: JSON.stringify({ ...registration, event }),
+        }),
+        () => fallback.create(registration),
+      );
     },
     async countAllByEvent(eventId) {
-      const registrations = await request("/registrations");
+      const registrations = await withFallback(
+        () => request("/registrations"),
+        () => fallback.list(),
+      );
       return registrations.filter((registration) => registration.eventId === eventId).length;
     },
     async countByEvent(eventId) {
-      const registrations = await request("/registrations");
+      const registrations = await withFallback(
+        () => request("/registrations"),
+        () => fallback.list(),
+      );
       return registrations.filter(
         (registration) =>
           registration.eventId === eventId && registration.status !== "canceled",
       ).length;
     },
     async find(id) {
-      const registrations = await request("/registrations");
+      const registrations = await withFallback(
+        () => request("/registrations"),
+        () => fallback.list(),
+      );
       return registrations.find((registration) => registration.id === id) ?? null;
     },
     async list() {
-      return request("/registrations");
+      return withFallback(() => request("/registrations"), () => fallback.list());
     },
     async update(registration) {
       if (registration.status === "canceled") {
-        return request(`/registrations/${encodeURIComponent(registration.id)}/cancel`, {
-          method: "PATCH",
-        });
+        return withFallback(() =>
+          request(`/registrations/${encodeURIComponent(registration.id)}/cancel`, {
+            method: "PATCH",
+          }),
+          () => fallback.update(registration),
+        );
       }
 
       return registration;
     },
     async remove(id) {
-      return request(`/registrations/${encodeURIComponent(id)}`, {
-        method: "DELETE",
-      });
+      return withFallback(() =>
+        request(`/registrations/${encodeURIComponent(id)}`, {
+          method: "DELETE",
+        }),
+        () => fallback.remove(id),
+      );
     },
   });
 }

@@ -17,6 +17,7 @@ import {
   cancelRegistrationRecord,
   createRegistrationRecord,
   createRegistrationApi,
+  createRegistrationStorage,
   initializeConfirmation,
   initializeRegistrationForm,
   initializeRegistrations,
@@ -52,12 +53,20 @@ const modal = initializeModal();
 const toasts = initializeToasts();
 
 const EVENTS_STORAGE_KEY = "event-registry-events";
+const REGISTRATIONS_STORAGE_KEY = "event-registry-registrations";
 const eventRepository = createEventStorage(
   window.localStorage,
   EVENTS_STORAGE_KEY,
   createEventSeed(),
 );
-const registrationRepository = createRegistrationApi();
+const localRegistrationRepository = createRegistrationStorage(
+  window.localStorage,
+  REGISTRATIONS_STORAGE_KEY,
+);
+const isStaticDeployment = window.location.hostname.endsWith(".github.io");
+const registrationRepository = createRegistrationApi({
+  fallback: isStaticDeployment ? localRegistrationRepository : undefined,
+});
 
 let eventsView;
 let detailView;

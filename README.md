@@ -63,12 +63,15 @@ The Express server serves the frontend and the API from the same origin.
 6. Enter attendee details, review them, and confirm the registration.
 7. Return to the manager workspace and open **Registrations**.
 
-To reset browser-stored event data, clear this site's Local Storage and refresh
-the page. Server-stored registrations are kept in the backend data file.
+To reset browser-stored event and registration data, clear this site's Local
+Storage and refresh the page. The browser data store allows the deployed
+GitHub Pages version to work without a running backend.
 
 ## Backend API
 
-The application includes an Express.js backend for attendee registrations.
+The application uses the Express.js backend for local development and testing.
+The static GitHub Pages deployment falls back to its local storage repository
+because it cannot run an Express process.
 
 | Method | Endpoint | Purpose |
 | --- | --- | --- |
@@ -78,10 +81,10 @@ The application includes an Express.js backend for attendee registrations.
 | `PATCH` | `/api/registrations/:id/cancel` | Cancel a registration |
 | `DELETE` | `/api/registrations/:id` | Remove a canceled registration |
 
-When an attendee submits the registration form, the frontend sends the event
-ID, attendee name, and email to the backend. The backend validates the input,
-checks the event status, schedule, and capacity, then saves the confirmed
-registration.
+During local development, attendee submissions use the API and are validated
+and persisted in `backend/data/registrations.json`. On GitHub Pages, the
+browser uses its local storage repository as a hosting fallback so the
+application remains usable.
 
 Registrations are stored in:
 
@@ -109,12 +112,12 @@ available capacity.
 ## Storage and validation
 
 - Event definitions are stored in the browser's Local Storage.
-- Registrations are stored by the Express backend in
-  `backend/data/registrations.json`.
+- Registrations use the Express backend and
+  `backend/data/registrations.json` during local development, with browser
+  Local Storage limited to the GitHub Pages hosting fallback.
 - The manager session uses browser Session Storage.
 - Event and registration rules are validated before records are saved.
-- The backend is the authoritative validation layer for attendee registration,
-  including event availability and capacity.
+- The backend validates attendee availability and capacity for API clients.
 - The application does not send email or process payments.
 
 ## Testing
