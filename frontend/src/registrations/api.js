@@ -16,7 +16,18 @@ async function request(path, options = {}) {
     throw error;
   }
 
-  const body = await response.json().catch(() => ({}));
+  const responseText = await response.text();
+  let body;
+
+  try {
+    body = responseText ? JSON.parse(responseText) : {};
+  } catch {
+    const error = new Error(
+      "The registration service is unavailable. Start the backend and try again.",
+    );
+    error.code = "API_UNAVAILABLE";
+    throw error;
+  }
 
   if (!response.ok) {
     const error = new Error(body.error ?? "The registration request failed.");

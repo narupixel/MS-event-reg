@@ -4,7 +4,7 @@ Event Registry is a browser application for creating events and managing
 attendee registrations. It provides a manager workspace and a separate
 invite-only attendee registration experience.
 
-[Open the live page](https://narupixel.github.io/MS-event-reg/)
+[Open the live page](https://narupixel.github.io/MS1-event-reg/)
 
 ## Features
 
@@ -185,5 +185,5 @@ frontend/
 
 ## Links
 
-- [Live page](https://narupixel.github.io/MS-event-reg/)
+- [Live page](https://narupixel.github.io/MS1-event-reg/)
 - [Repository issues](https://github.com/narupixel/MS-event-reg/issues)
