@@ -64,8 +64,10 @@ The Express server serves the frontend and the API from the same origin.
 7. Return to the manager workspace and open **Registrations**.
 
 To reset browser-stored event and registration data, clear this site's Local
-Storage and refresh the page. The browser data store allows the deployed
-GitHub Pages version to work without a running backend.
+Storage and refresh the page. If the deployed page still shows an older
+version after a deployment, use a hard refresh (`Ctrl+F5` on Windows or
+`Cmd+Shift+R` on macOS). The browser data store allows the deployed GitHub
+Pages version to work without a running backend.
 
 ## Backend API
 
