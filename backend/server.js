@@ -6,7 +6,8 @@ import crypto from "node:crypto";
 
 const ROOT = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 const DATA_DIRECTORY = path.join(ROOT, "backend", "data");
-const REGISTRATIONS_FILE = path.join(DATA_DIRECTORY, "registrations.json");
+const REGISTRATIONS_FILE =
+  process.env.REGISTRATIONS_FILE ?? path.join(DATA_DIRECTORY, "registrations.json");
 const PORT = Number(process.env.PORT ?? 8000);
 let registrationWriteQueue = Promise.resolve();
 
@@ -51,7 +52,7 @@ async function readRegistrations() {
 }
 
 async function writeRegistrations(registrations) {
-  await fs.mkdir(DATA_DIRECTORY, { recursive: true });
+  await fs.mkdir(path.dirname(REGISTRATIONS_FILE), { recursive: true });
   await fs.writeFile(
     REGISTRATIONS_FILE,
     `${JSON.stringify(registrations, null, 2)}\n`,
@@ -114,6 +115,17 @@ function validateRequest(body, event, registrations) {
     errors.event = "Registration has closed for this event.";
   } else if (activeCount(registrations, event.id) >= event.capacity) {
     errors.event = "This event has reached capacity.";
+  }
+
+  const alreadyRegistered = registrations.some(
+    (registration) =>
+      registration.eventId === event?.id &&
+      registration.email === email &&
+      registration.status === "confirmed",
+  );
+
+  if (!errors.email && alreadyRegistered) {
+    errors.email = "This email is already registered for this event.";
   }
 
   return { errors, attendeeName, email };
@@ -222,6 +234,11 @@ app.delete("/api/registrations/:id", async (request, response, next) => {
 });
 
 app.use((error, _request, response, _next) => {
+  if (error.type === "entity.parse.failed") {
+    response.status(400).json({ error: "The request body must be valid JSON." });
+    return;
+  }
+
   console.error(error);
   response.status(500).json({ error: "The server could not complete the request." });
 });

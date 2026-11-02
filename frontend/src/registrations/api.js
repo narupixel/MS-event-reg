@@ -30,7 +30,11 @@ async function request(path, options = {}) {
   }
 
   if (!response.ok) {
-    const error = new Error(body.error ?? "The registration request failed.");
+    // Show the backend's specific reason (for example, a full event) when it sends one.
+    const firstDetail = body.details ? Object.values(body.details)[0] : null;
+    const error = new Error(
+      firstDetail ?? body.error ?? "The registration request failed.",
+    );
     error.details = body.details;
     throw error;
   }

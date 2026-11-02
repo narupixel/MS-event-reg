@@ -108,7 +108,7 @@ test("router clears stale authentication before redirecting protected routes", a
 test("the document provides separate manager and public shell hooks", () => {
   assert.match(markup, /data-app-shell data-mode="manager"/);
   assert.match(markup, /data-public-header hidden/);
-  assert.match(markup, /href="#register">\s*Preview attendee page/);
+  assert.doesNotMatch(markup, /Preview attendee page/);
 });
 
 test("renderShell hides and restores the manager navigation", () => {
