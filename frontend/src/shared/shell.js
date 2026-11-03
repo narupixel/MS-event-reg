@@ -94,14 +94,9 @@ function createBrand(href) {
 
 function createPublicHeader() {
   const inner = createElement("div", "public-header-inner");
-  const managerLink = createElement(
-    "a",
-    "button button-secondary public-manager-link",
-    "Manager workspace",
-  );
 
-  managerLink.href = "#events";
-  inner.append(createBrand("#register"), managerLink);
+  // Attendees only see the app name, with no link to the manager side.
+  inner.append(createBrand("#register"));
 
   return inner;
 }

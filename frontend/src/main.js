@@ -231,7 +231,7 @@ registrationsView = initializeRegistrations({
 });
 
 window.addEventListener("storage", ({ key }) => {
-  if (key !== EVENTS_STORAGE_KEY) {
+  if (![EVENTS_STORAGE_KEY, REGISTRATIONS_STORAGE_KEY].includes(key)) {
     return;
   }
 
@@ -240,6 +240,30 @@ window.addEventListener("storage", ({ key }) => {
     publicView?.render(),
     registrationsView?.render(),
   ]);
+});
+
+// Reload the latest registrations from the backend whenever the manager
+// opens the Events or Registrations page, or comes back to this tab.
+function refreshManagerViews() {
+  if (!isAuthenticated()) {
+    return;
+  }
+
+  void Promise.all([eventsView?.render(), registrationsView?.render()]);
+}
+
+window.addEventListener("hashchange", () => {
+  const route = window.location.hash.slice(1).split("/")[0];
+
+  if (["events", "registrations"].includes(route)) {
+    refreshManagerViews();
+  }
+});
+
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible") {
+    refreshManagerViews();
+  }
 });
 
 document.querySelector("[data-new-event]")?.addEventListener("click", () => {

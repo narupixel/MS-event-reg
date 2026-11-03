@@ -1,6 +1,15 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { app, readRegistrations, writeRegistrations } from "../server.js";
+import os from "node:os";
+import path from "node:path";
+
+// Use a temporary file so running the tests never erases real registrations.
+process.env.REGISTRATIONS_FILE = path.join(
+  os.tmpdir(),
+  `event-registry-test-${process.pid}.json`,
+);
+
+const { app, readRegistrations, writeRegistrations } = await import("../server.js");
 
 const testEvent = {
   id: "test-event",
@@ -76,4 +85,58 @@ test("rejects invalid input and prevents a full event from overbooking", async (
   const fullBody = await fullResponse.json();
   assert.equal(fullResponse.status, 422);
   assert.equal(fullBody.details.event, "This event has reached capacity.");
+});
+
+test("rejects the same email twice for one event and malformed JSON", async () => {
+  await writeRegistrations([]);
+  const body = JSON.stringify({
+    eventId: testEvent.id,
+    event: { ...testEvent, capacity: 5 },
+    attendeeName: "Ada Lovelace",
+    email: "ada@example.com",
+  });
+  const options = {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body,
+  };
+
+  assert.equal((await fetch(`${baseUrl}/api/registrations`, options)).status, 201);
+
+  const duplicate = await fetch(`${baseUrl}/api/registrations`, options);
+  assert.equal(duplicate.status, 422);
+  assert.equal(
+    (await duplicate.json()).details.email,
+    "This email is already registered for this event.",
+  );
+
+  const malformed = await fetch(`${baseUrl}/api/registrations`, {
+    ...options,
+    body: "{bad json",
+  });
+  assert.equal(malformed.status, 400);
+});
+
+test("cancels, protects, and removes registration records", async () => {
+  const [registration] = await readRegistrations();
+  const removeActive = await fetch(`${baseUrl}/api/registrations/${registration.id}`, {
+    method: "DELETE",
+  });
+  assert.equal(removeActive.status, 409);
+
+  const cancel = await fetch(`${baseUrl}/api/registrations/${registration.id}/cancel`, {
+    method: "PATCH",
+  });
+  assert.equal(cancel.status, 200);
+  assert.equal((await cancel.json()).status, "canceled");
+
+  const remove = await fetch(`${baseUrl}/api/registrations/${registration.id}`, {
+    method: "DELETE",
+  });
+  assert.equal(remove.status, 200);
+
+  const missing = await fetch(`${baseUrl}/api/registrations/${registration.id}`, {
+    method: "DELETE",
+  });
+  assert.equal(missing.status, 404);
 });
